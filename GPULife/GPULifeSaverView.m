@@ -44,7 +44,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	c = [c colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
 	[c getRed:&ret.r green:&ret.g blue:&ret.b alpha:NULL];
 	float max = MAX(MAX(ret.r, ret.g), ret.b);
-	
+
 	// make sure the color isn't too black so the shader can still find it
 	if(max < 0.101)
 	{
@@ -64,24 +64,25 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 {
 	[lifeView removeFromSuperview];
 	[lifeView release];
-	
+
 	lifeView = [[GPULifeView alloc] initWithFrame:[self bounds]];
+	[lifeView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	[lifeView setUsesTimer:NO];
-		
+
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:
 		[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
 	[lifeView setShowsFPS:[defaults boolForKey:kDisplayFPSDefaultsName]];
 	[lifeView setZoom:[defaults integerForKey:kZoomDefaultsName]];
 	[lifeView setGenerationRate:[defaults integerForKey:kGenerationDefaultsName]];
 	[lifeView setInitialFill:[defaults integerForKey:kInitialFillDefaultsName]];
-	
+
 	GPULifeColor3 colorsArray[4];
 	NSArray *colors = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:kCornerColorsDefaultsName]];
 	int i;
 	for(i = 0; i < 4; i++)
 		colorsArray[i] = [self structForNSColor:[colors objectAtIndex:i]];
 	[lifeView setCornerColors:colorsArray];
-	
+
 	[self addSubview:lifeView];
 }
 
@@ -150,15 +151,15 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	if(!configureSheet)
 	{
 		[NSBundle loadNibNamed:@"ScreenSaver" owner:self];
-		
+
 		NSMutableDictionary *tempDict = [[NSMutableDictionary alloc] init];
 		[self fillDictionary:tempDict withColorWellsInView:colorWellBox];
 		[colorWells release];
 		colorWells = [tempDict copy];
 	}
-	
+
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
-	
+
 	[limitFPSCheckbox setState:[defaults boolForKey:kLimitFPSDefaultsName] ? NSOnState : NSOffState];
 	double fpsLimit = [[defaults objectForKey:kLimitFPSValueDefaultsName] doubleValue];;
 	[fpsSlider setDoubleValue:fpsLimit];
@@ -169,14 +170,14 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	[zoomField setIntValue:zoom];
 	[initialFillSlider setIntValue:[defaults integerForKey:kInitialFillDefaultsName]];
 	[generationField setIntValue:[defaults integerForKey:kGenerationDefaultsName]];
-	
+
 	NSArray *colors = [NSUnarchiver unarchiveObjectWithData:[defaults objectForKey:kCornerColorsDefaultsName]];
 	int i;
 	for(i = 0; i < 4; i++)
 		[[colorWells objectForKey:[NSNumber numberWithInt:i]] setColor:[colors objectAtIndex:i]];
-	
+
 	[self limitFPSChecked:limitFPSCheckbox];
-	
+
     return configureSheet;
 }
 
@@ -201,33 +202,33 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 - (void)ok:sender
 {
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
-	
+
 	[defaults setBool:[limitFPSCheckbox state] == NSOnState forKey:kLimitFPSDefaultsName];
 	[defaults setObject:[NSNumber numberWithDouble:[fpsField doubleValue]] forKey:kLimitFPSValueDefaultsName];
 	[defaults setBool:[displayFPSCheckbox state] == NSOnState forKey:kDisplayFPSDefaultsName];
 	[defaults setInteger:[zoomField intValue] forKey:kZoomDefaultsName];
 	[defaults setInteger:[initialFillSlider intValue] forKey:kInitialFillDefaultsName];
 	[defaults setInteger:[generationField intValue] forKey:kGenerationDefaultsName];
-	
+
 	NSMutableArray *array = [NSMutableArray array];
 	int i;
 	for(i = 0; i < 4; i++)
 		[array addObject:[[colorWells objectForKey:[NSNumber numberWithInt:i]] color]];
 	[defaults setObject:[NSArchiver archivedDataWithRootObject:array] forKey:kCornerColorsDefaultsName];
-	
+
 	[defaults synchronize];
-	
+
 	[NSApp endSheet:configureSheet];
-	
+
 	[self reinitLifeView];
-	
+
 	[[NSColorPanel sharedColorPanel] orderOut:nil];
 }
 
 - (void)cancel:sender
 {
 	[NSApp endSheet:configureSheet];
-	
+
 	[[NSColorPanel sharedColorPanel] orderOut:nil];
 }
 
