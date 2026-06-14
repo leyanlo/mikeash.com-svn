@@ -11,7 +11,7 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		C26797C60B0B938F00FD6A40 /* GPULife.saver in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CC7A7008350BBD00EB6054 /* GPULife.saver */; };
+		C26797C60B0B938F00FD6A40 /* GPULife.saver in CopyFiles */ = {isa = PBXBuildFile; fileRef = C2CC7A7008350BBD00EB6054 /* GPULife.saver */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C2CC78710833A2A300EB6054 /* LifeShader in Resources */ = {isa = PBXBuildFile; fileRef = C2CC78700833A2A300EB6054 /* LifeShader */; };
 		C2CC78790833A2DC00EB6054 /* GPULifeView.m in Sources */ = {isa = PBXBuildFile; fileRef = C2CC78780833A2DC00EB6054 /* GPULifeView.m */; };
 		C2CC795C0833B01800EB6054 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2CC795B0833B01800EB6054 /* OpenGL.framework */; };
@@ -375,11 +375,12 @@
 		C2D820530897ABEC008CB8EC /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_ENABLE_OBJC_GC = YES;
+				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G4;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -388,12 +389,14 @@
 				INFOPLIST_FILE = "GPULife saver-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LIBRARY_STYLE = BUNDLE;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikeash.GPULife.saver;
 				PRODUCT_NAME = GPULife;
-				SDKROOT_x86_64 = /Developer/SDKs/MacOSX10.6.sdk;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-W",
@@ -408,14 +411,11 @@
 		C2D820540897ABEC008CB8EC /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					x86_64,
-					ppc,
-					i386,
-				);
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_ENABLE_OBJC_GC = YES;
+				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -423,12 +423,14 @@
 				INFOPLIST_FILE = "GPULife saver-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LIBRARY_STYLE = BUNDLE;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikeash.GPULife.saver;
 				PRODUCT_NAME = GPULife;
-				SDKROOT_x86_64 = /Developer/SDKs/MacOSX10.6.sdk;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-W",
@@ -443,7 +445,9 @@
 		C2D820550897ABEC008CB8EC /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				GCC_ENABLE_OBJC_GC = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G4;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -451,12 +455,14 @@
 				INFOPLIST_FILE = "GPULife saver-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				LIBRARY_STYLE = BUNDLE;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
 				PREBINDING = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikeash.GPULife.saver;
 				PRODUCT_NAME = GPULife;
-				SDKROOT_x86_64 = /Developer/SDKs/MacOSX10.6.sdk;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-W",
@@ -470,26 +476,22 @@
 		C2D820570897ABEC008CB8EC /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
 		C2D820580897ABEC008CB8EC /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
-				GCC_VERSION = 4.0;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ARCHS = x86_64;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
 		C2D820590897ABEC008CB8EC /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT = macosx;
 			};
 			name = Default;
 		};
