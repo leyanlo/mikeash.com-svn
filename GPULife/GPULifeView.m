@@ -13,6 +13,7 @@
 #include <OpenGL/glu.h>
 
 #include <mach/mach_time.h>
+#include <math.h>
 
 
 @implementation GPULifeView
@@ -187,6 +188,30 @@
 	return YES;
 }
 
+- (void)setViewportWidth:(GLsizei)viewportWidth height:(GLsizei)viewportHeight projectionWidth:(double)projectionWidth height:(double)projectionHeight
+{
+	glViewport(0, 0, viewportWidth, viewportHeight);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, (GLdouble) projectionWidth, 0.0, (GLdouble) projectionHeight);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+- (void)setDisplayViewport
+{
+	NSRect bounds = [self bounds];
+	NSRect backingBounds = [self convertRectToBacking:bounds];
+	GLsizei backingWidth = MAX(0, (GLsizei)ceil(NSWidth(backingBounds)));
+	GLsizei backingHeight = MAX(0, (GLsizei)ceil(NSHeight(backingBounds)));
+	[self setViewportWidth:backingWidth height:backingHeight projectionWidth:NSWidth(bounds) height:NSHeight(bounds)];
+}
+
+- (void)setSimulationViewport
+{
+	[self setViewportWidth:xsize height:ysize projectionWidth:xsize height:ysize];
+}
+
 - (void)loadShader
 {
 	NSString *path = [[NSBundle bundleForClass:[self class]] pathForResource:@"LifeShader" ofType:@""];
@@ -206,14 +231,7 @@
 	glClear (GL_COLOR_BUFFER_BIT);
 
 	/* initialize viewing values  */
-	double w = NSWidth([self bounds]);
-	double h = NSHeight([self bounds]);
-	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0.0, (GLdouble) w, 0.0, (GLdouble) h);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	[self setDisplayViewport];
 
 	/*
 	glEnable (GL_BLEND);
@@ -387,23 +405,24 @@ double curTime(void)
 		return;
 	}
 
+	[self setSimulationViewport];
 	[self step];
+	[self setDisplayViewport];
+	glClearColor (0.0, 0.0, 0.0, 1.0);
+	glClear (GL_COLOR_BUFFER_BIT);
 
-	if(zoom != 1)
-	{
-		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, tex);
+	glEnable(GL_TEXTURE_RECTANGLE_ARB);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, tex);
 
-		glPushMatrix();
+	glPushMatrix();
 
-		glScalef(zoom, zoom, 1);
-		[self drawTexture];
+	glScalef(zoom, zoom, 1);
+	[self drawTexture];
 
-		glPopMatrix();
+	glPopMatrix();
 
-		glDisable(GL_TEXTURE_RECTANGLE_ARB);
-	}
+	glDisable(GL_TEXTURE_RECTANGLE_ARB);
 
 	if(usingFPSTex)
 	{
