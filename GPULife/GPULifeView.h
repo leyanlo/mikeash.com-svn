@@ -43,6 +43,7 @@ typedef struct {
 	SEL fpsSelector;
 	
 	BOOL usesTimer;
+	NSTimer *timer;
 }
 
 - (void)setZoom:(int)z;

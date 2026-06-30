@@ -49,14 +49,83 @@
     return self;
 }
 
+- (void)invalidateTimer
+{
+	[timer invalidate];
+	[timer release];
+	timer = nil;
+}
+
+- (void)startTimerIfNeeded
+{
+	if(usesTimer && !timer)
+		timer = [[NSTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(timer) userInfo:NULL repeats:YES] retain];
+}
+
 - (void)dealloc
 {
-	glDeleteTextures(1, &tex);
-	glDeleteProgramsARB(1, &shader);
-	if(usingFPSTex)
-		glDeleteTextures(1, &fpsTex);
+	[self invalidateTimer];
+	[self releaseOpenGLResources];
 
 	[super dealloc];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+	if(!newWindow)
+		[self invalidateTimer];
+
+	[super viewWillMoveToWindow:newWindow];
+}
+
+- (void)viewDidMoveToWindow
+{
+	[super viewDidMoveToWindow];
+
+	if([self window] && inited)
+		[self startTimerIfNeeded];
+}
+
+- (void)releaseOpenGLResources
+{
+	NSOpenGLContext *context = [self openGLContext];
+	if(!context)
+		return;
+
+	NSOpenGLContext *previousContext = [NSOpenGLContext currentContext];
+	[context makeCurrentContext];
+
+	if(tex)
+	{
+		glDeleteTextures(1, &tex);
+		tex = 0;
+	}
+
+	if(shader)
+	{
+		glDeleteProgramsARB(1, &shader);
+		shader = 0;
+	}
+
+	if(usingFPSTex)
+	{
+		glDeleteTextures(1, &fpsTex);
+		fpsTex = 0;
+		usingFPSTex = NO;
+	}
+
+	[context clearDrawable];
+
+	if(previousContext && previousContext != context)
+		[previousContext makeCurrentContext];
+	else
+		[NSOpenGLContext clearCurrentContext];
+
+	inited = NO;
+	xsize = 0;
+	ysize = 0;
+	numFrames = 0;
+	lastClock = 0.0;
 }
 
 - (void)setZoom:(int)z
@@ -89,7 +158,7 @@
 	memcpy(cornerColors, c, sizeof(cornerColors));
 }
 
-- (void)setFPSTarget:o selector:(SEL)s;
+- (void)setFPSTarget:o selector:(SEL)s
 {
 	if([o respondsToSelector:s])
 	{
@@ -181,8 +250,7 @@
 		[self loadShader];
 		inited = YES;
 
-		if(usesTimer)
-			[NSTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(timer) userInfo:NULL repeats:YES];
+		[self startTimerIfNeeded];
 	}
 
 	return YES;

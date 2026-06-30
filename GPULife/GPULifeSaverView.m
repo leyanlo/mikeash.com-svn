@@ -11,6 +11,11 @@
 #import "GPULifeView.h"
 
 
+@interface GPULifeView (GPULifeSaverViewPrivate)
+- (void)releaseOpenGLResources;
+@end
+
+
 @implementation GPULifeSaverView
 
 static NSString * const kLimitFPSDefaultsName = @"LimitFPS";
@@ -62,8 +67,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)reinitLifeView
 {
-	[lifeView removeFromSuperview];
-	[lifeView release];
+	[self releaseLifeView];
 
 	lifeView = [[GPULifeView alloc] initWithFrame:[self bounds]];
 	[lifeView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -86,6 +90,14 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	[self addSubview:lifeView];
 }
 
+- (void)releaseLifeView
+{
+	[lifeView releaseOpenGLResources];
+	[lifeView removeFromSuperview];
+	[lifeView release];
+	lifeView = nil;
+}
+
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
 {
     self = [super initWithFrame:frame isPreview:isPreview];
@@ -97,7 +109,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)dealloc
 {
-	[lifeView release];
+	[self releaseLifeView];
 	[colorWells release];
 	[configureSheet release];
 	[super dealloc];
@@ -105,6 +117,9 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)startAnimation
 {
+	if(!lifeView)
+		[self reinitLifeView];
+
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:
 		[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
 	if([defaults boolForKey:kLimitFPSDefaultsName])
@@ -116,7 +131,8 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)stopAnimation
 {
-    [super stopAnimation];
+	[super stopAnimation];
+	[self releaseLifeView];
 }
 
 - (void)drawRect:(NSRect)rect
