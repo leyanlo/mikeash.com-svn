@@ -72,7 +72,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 - (BOOL)isLifeViewVisible
 {
 	NSWindow *window = [self window];
-	if(!window || ![self isVisible] || [self isHiddenOrHasHiddenAncestor])
+	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
 		return NO;
 
 	if([window respondsToSelector:@selector(occlusionState)])
@@ -279,7 +279,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 	[NSApp endSheet:configureSheet];
 
-	if(lifeView || [self isLifeViewVisible])
+	if(lifeView)
 		[self reinitLifeView];
 
 	[[NSColorPanel sharedColorPanel] orderOut:nil];
