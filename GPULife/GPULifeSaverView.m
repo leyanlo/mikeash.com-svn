@@ -65,9 +65,21 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	return ret;
 }
 
+- (BOOL)isLifeViewVisible
+{
+	NSWindow *window = [self window];
+	if(!window || ![self isVisible] || [self isHiddenOrHasHiddenAncestor])
+		return NO;
+
+	return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
+}
+
 - (void)reinitLifeView
 {
 	[self releaseLifeView];
+
+	if(![self isLifeViewVisible])
+		return;
 
 	lifeView = [[GPULifeView alloc] initWithFrame:[self bounds]];
 	[lifeView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -92,17 +104,34 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)releaseLifeView
 {
-	[lifeView releaseOpenGLResources];
+	if(!lifeView)
+		return;
+
 	[lifeView removeFromSuperview];
+	[lifeView releaseOpenGLResources];
 	[lifeView release];
 	lifeView = nil;
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+	if(!newWindow)
+		[self releaseLifeView];
+
+	[super viewWillMoveToWindow:newWindow];
+}
+
+- (void)viewDidHide
+{
+	[self releaseLifeView];
+
+	[super viewDidHide];
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
 {
     self = [super initWithFrame:frame isPreview:isPreview];
     if (self) {
-		[self reinitLifeView];
     }
     return self;
 }
@@ -117,7 +146,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)startAnimation
 {
-	if(!lifeView)
+	if(!lifeView && [self isLifeViewVisible])
 		[self reinitLifeView];
 
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:
@@ -141,6 +170,15 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)animateOneFrame
 {
+	if(![self isLifeViewVisible])
+	{
+		[self releaseLifeView];
+		return;
+	}
+
+	if(!lifeView)
+		[self reinitLifeView];
+
 	[lifeView display];
 }
 
@@ -172,6 +210,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 		[self fillDictionary:tempDict withColorWellsInView:colorWellBox];
 		[colorWells release];
 		colorWells = [tempDict copy];
+		[tempDict release];
 	}
 
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
@@ -236,7 +275,8 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 	[NSApp endSheet:configureSheet];
 
-	[self reinitLifeView];
+	if(lifeView || [self isLifeViewVisible])
+		[self reinitLifeView];
 
 	[[NSColorPanel sharedColorPanel] orderOut:nil];
 }
