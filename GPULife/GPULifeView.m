@@ -88,7 +88,7 @@
 
 - (void)releaseOpenGLResources
 {
-	BOOL hasGLResources = tex || shader || usingFPSTex;
+	BOOL hasGLResources = tex || fpsTex || shader;
 	NSOpenGLContext *context = nil;
 	NSOpenGLContext *previousContext = nil;
 
@@ -104,7 +104,7 @@
 			glDeleteTextures(1, &tex);
 		tex = 0;
 
-		if(context && usingFPSTex)
+		if(context && fpsTex)
 			glDeleteTextures(1, &fpsTex);
 		fpsTex = 0;
 		usingFPSTex = NO;
