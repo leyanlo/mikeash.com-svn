@@ -88,38 +88,40 @@
 
 - (void)releaseOpenGLResources
 {
-	NSOpenGLContext *context = [self openGLContext];
-	if(!context)
-		return;
-
-	NSOpenGLContext *previousContext = [NSOpenGLContext currentContext];
-	[context makeCurrentContext];
-
-	if(tex)
+	if(tex || shader || usingFPSTex)
 	{
-		glDeleteTextures(1, &tex);
-		tex = 0;
+		NSOpenGLContext *context = [self openGLContext];
+		NSOpenGLContext *previousContext = [NSOpenGLContext currentContext];
+		[context makeCurrentContext];
+
+		if(tex)
+		{
+			glDeleteTextures(1, &tex);
+			tex = 0;
+		}
+
+		if(shader)
+		{
+			glDeleteProgramsARB(1, &shader);
+			shader = 0;
+		}
+
+		if(usingFPSTex)
+		{
+			glDeleteTextures(1, &fpsTex);
+			fpsTex = 0;
+			usingFPSTex = NO;
+		}
+
+		[context clearDrawable];
+
+		if(previousContext && previousContext != context)
+			[previousContext makeCurrentContext];
+		else
+			[NSOpenGLContext clearCurrentContext];
 	}
 
-	if(shader)
-	{
-		glDeleteProgramsARB(1, &shader);
-		shader = 0;
-	}
-
-	if(usingFPSTex)
-	{
-		glDeleteTextures(1, &fpsTex);
-		fpsTex = 0;
-		usingFPSTex = NO;
-	}
-
-	[context clearDrawable];
-
-	if(previousContext && previousContext != context)
-		[previousContext makeCurrentContext];
-	else
-		[NSOpenGLContext clearCurrentContext];
+	[self clearGLContext];
 
 	inited = NO;
 	xsize = 0;

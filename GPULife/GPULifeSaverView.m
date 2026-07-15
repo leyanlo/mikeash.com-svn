@@ -92,18 +92,22 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)releaseLifeView
 {
-	[lifeView releaseOpenGLResources];
 	[lifeView removeFromSuperview];
+	[lifeView releaseOpenGLResources];
 	[lifeView release];
 	lifeView = nil;
+}
+
+- (BOOL)shouldRenderLifeView
+{
+	NSWindow *window = [self window];
+	return window && [window isVisible] && ![self isHiddenOrHasHiddenAncestor] &&
+		([window occlusionState] & NSWindowOcclusionStateVisible);
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
 {
     self = [super initWithFrame:frame isPreview:isPreview];
-    if (self) {
-		[self reinitLifeView];
-    }
     return self;
 }
 
@@ -117,7 +121,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)startAnimation
 {
-	if(!lifeView)
+	if(!lifeView && [self shouldRenderLifeView])
 		[self reinitLifeView];
 
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:
@@ -135,12 +139,35 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	[self releaseLifeView];
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+	if(!newWindow)
+		[self releaseLifeView];
+
+	[super viewWillMoveToWindow:newWindow];
+}
+
+- (void)viewDidHide
+{
+	[self releaseLifeView];
+	[super viewDidHide];
+}
+
 - (void)drawRect:(NSRect)rect
 {
 }
 
 - (void)animateOneFrame
 {
+	if(![self shouldRenderLifeView])
+	{
+		[self releaseLifeView];
+		return;
+	}
+
+	if(!lifeView)
+		[self reinitLifeView];
+
 	[lifeView display];
 }
 
@@ -172,6 +199,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 		[self fillDictionary:tempDict withColorWellsInView:colorWellBox];
 		[colorWells release];
 		colorWells = [tempDict copy];
+		[tempDict release];
 	}
 
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:[[NSBundle bundleForClass:[self class]] bundleIdentifier]];
@@ -236,7 +264,8 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 	[NSApp endSheet:configureSheet];
 
-	[self reinitLifeView];
+	if(lifeView)
+		[self reinitLifeView];
 
 	[[NSColorPanel sharedColorPanel] orderOut:nil];
 }
