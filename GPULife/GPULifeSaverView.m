@@ -69,9 +69,6 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 {
 	[self releaseLifeView];
 
-	if(![self shouldRenderLifeView])
-		return;
-
 	lifeView = [[GPULifeView alloc] initWithFrame:[self bounds]];
 	[lifeView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	[lifeView setUsesTimer:NO];
@@ -104,10 +101,8 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 - (BOOL)shouldRenderLifeView
 {
 	NSWindow *window = [self window];
-	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
-		return NO;
-
-	return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
+	return window && [window isVisible] && ![self isHiddenOrHasHiddenAncestor] &&
+		([window occlusionState] & NSWindowOcclusionStateVisible);
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
