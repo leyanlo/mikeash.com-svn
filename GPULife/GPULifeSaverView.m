@@ -10,10 +10,6 @@
 
 #import "GPULifeView.h"
 
-#ifndef NSWindowOcclusionStateVisible
-#define NSWindowOcclusionStateVisible (1UL << 1)
-#endif
-
 
 @interface GPULifeView (GPULifeSaverViewPrivate)
 - (void)releaseOpenGLResources;
@@ -75,10 +71,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
 		return NO;
 
-	if([window respondsToSelector:@selector(occlusionState)])
-		return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
-
-	return YES;
+	return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
 }
 
 - (void)reinitLifeView

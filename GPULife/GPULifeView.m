@@ -187,6 +187,7 @@
 		if(usingFPSTex)
 		{
 			glDeleteTextures(1, &fpsTex);
+			fpsTex = 0;
 			usingFPSTex = NO;
 		}
 	}
