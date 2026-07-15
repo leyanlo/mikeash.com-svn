@@ -88,34 +88,31 @@
 
 - (void)releaseOpenGLResources
 {
-	BOOL hasGLResources = tex || fpsTex || shader;
-	NSOpenGLContext *context = nil;
-	NSOpenGLContext *previousContext = nil;
-
-	if(hasGLResources)
+	if(tex || shader || usingFPSTex)
 	{
-		context = [self openGLContext];
-		previousContext = [NSOpenGLContext currentContext];
+		NSOpenGLContext *context = [self openGLContext];
+		NSOpenGLContext *previousContext = [NSOpenGLContext currentContext];
+		[context makeCurrentContext];
 
-		if(context)
-			[context makeCurrentContext];
-
-		if(context && tex)
+		if(tex)
+		{
 			glDeleteTextures(1, &tex);
-		tex = 0;
+			tex = 0;
+		}
 
-		if(context && fpsTex)
-			glDeleteTextures(1, &fpsTex);
-		fpsTex = 0;
-		usingFPSTex = NO;
-
-		if(context && shader)
+		if(shader)
+		{
 			glDeleteProgramsARB(1, &shader);
-		shader = 0;
-	}
+			shader = 0;
+		}
 
-	if(context)
-	{
+		if(usingFPSTex)
+		{
+			glDeleteTextures(1, &fpsTex);
+			fpsTex = 0;
+			usingFPSTex = NO;
+		}
+
 		[context clearDrawable];
 
 		if(previousContext && previousContext != context)
@@ -187,7 +184,6 @@
 		if(usingFPSTex)
 		{
 			glDeleteTextures(1, &fpsTex);
-			fpsTex = 0;
 			usingFPSTex = NO;
 		}
 	}

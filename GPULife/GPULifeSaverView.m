@@ -65,20 +65,11 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	return ret;
 }
 
-- (BOOL)isLifeViewVisible
-{
-	NSWindow *window = [self window];
-	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
-		return NO;
-
-	return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
-}
-
 - (void)reinitLifeView
 {
 	[self releaseLifeView];
 
-	if(![self isLifeViewVisible])
+	if(![self shouldRenderLifeView])
 		return;
 
 	lifeView = [[GPULifeView alloc] initWithFrame:[self bounds]];
@@ -104,33 +95,25 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)releaseLifeView
 {
-	if(!lifeView)
-		return;
-
 	[lifeView removeFromSuperview];
 	[lifeView releaseOpenGLResources];
 	[lifeView release];
 	lifeView = nil;
 }
 
-- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+- (BOOL)shouldRenderLifeView
 {
-	if(!newWindow)
-		[self releaseLifeView];
+	NSWindow *window = [self window];
+	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
+		return NO;
 
-	[super viewWillMoveToWindow:newWindow];
-}
-
-- (void)viewDidHide
-{
-	[self releaseLifeView];
-
-	[super viewDidHide];
+	return ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
 {
-    return [super initWithFrame:frame isPreview:isPreview];
+    self = [super initWithFrame:frame isPreview:isPreview];
+    return self;
 }
 
 - (void)dealloc
@@ -143,7 +126,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)startAnimation
 {
-	if(!lifeView && [self isLifeViewVisible])
+	if(!lifeView && [self shouldRenderLifeView])
 		[self reinitLifeView];
 
 	ScreenSaverDefaults *defaults = [ScreenSaverDefaults defaultsForModuleWithName:
@@ -161,13 +144,27 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 	[self releaseLifeView];
 }
 
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+	if(!newWindow)
+		[self releaseLifeView];
+
+	[super viewWillMoveToWindow:newWindow];
+}
+
+- (void)viewDidHide
+{
+	[self releaseLifeView];
+	[super viewDidHide];
+}
+
 - (void)drawRect:(NSRect)rect
 {
 }
 
 - (void)animateOneFrame
 {
-	if(![self isLifeViewVisible])
+	if(![self shouldRenderLifeView])
 	{
 		[self releaseLifeView];
 		return;
