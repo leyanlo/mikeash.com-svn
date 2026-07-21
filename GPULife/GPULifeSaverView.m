@@ -101,8 +101,7 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 - (BOOL)shouldRenderLifeView
 {
 	NSWindow *window = [self window];
-	return window && [window isVisible] && ![self isHiddenOrHasHiddenAncestor] &&
-		([window occlusionState] & NSWindowOcclusionStateVisible);
+	return window && [window isVisible] && ![self isHiddenOrHasHiddenAncestor];
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
