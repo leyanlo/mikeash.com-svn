@@ -33,6 +33,8 @@
 	[myFormat release];
     if (self)
 	{
+		[self setWantsBestResolutionOpenGLSurface:YES];
+
 		zoom = 1;
 		generationRate = 1;
 		initialFill = 12;
@@ -296,6 +298,8 @@
 
 - (void)reshape
 {
+	[super reshape];
+
 	/* select clearing color 	*/
 	glClearColor (0.0, 0.0, 0.0, 1.0);
 	glClear (GL_COLOR_BUFFER_BIT);

@@ -166,6 +166,8 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 	if(!lifeView)
 		[self reinitLifeView];
+	else if(!NSEqualRects([lifeView frame], [self bounds]))
+		[lifeView setFrame:[self bounds]];
 
 	[lifeView display];
 }
