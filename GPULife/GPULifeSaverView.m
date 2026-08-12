@@ -25,6 +25,7 @@ static NSString * const kZoomDefaultsName = @"Zoom";
 static NSString * const kInitialFillDefaultsName = @"InitialFill";
 static NSString * const kGenerationDefaultsName = @"GenerationRate";
 static NSString * const kCornerColorsDefaultsName = @"CornerColors";
+static const NSTimeInterval kInitialVisibilityGracePeriod = 2.0;
 
 + (void)initialize
 {
@@ -101,12 +102,27 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 - (BOOL)shouldRenderLifeView
 {
 	NSWindow *window = [self window];
-	return window && [window isVisible] && ![self isHiddenOrHasHiddenAncestor];
+	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
+		return NO;
+
+	BOOL windowIsUnoccluded = ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
+	if(windowIsUnoccluded)
+	{
+		hasObservedVisibleWindow = YES;
+		return YES;
+	}
+
+	// Screen saver windows can report themselves occluded until their first frame.
+	return !hasObservedVisibleWindow &&
+		[[NSProcessInfo processInfo] systemUptime] < initialVisibilityDeadline;
 }
 
 - (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
 {
     self = [super initWithFrame:frame isPreview:isPreview];
+	if(self)
+		initialVisibilityDeadline = [[NSProcessInfo processInfo] systemUptime] +
+			kInitialVisibilityGracePeriod;
     return self;
 }
 
@@ -120,6 +136,10 @@ static NSString * const kCornerColorsDefaultsName = @"CornerColors";
 
 - (void)startAnimation
 {
+	hasObservedVisibleWindow = NO;
+	initialVisibilityDeadline = [[NSProcessInfo processInfo] systemUptime] +
+		kInitialVisibilityGracePeriod;
+
 	if(!lifeView && [self shouldRenderLifeView])
 		[self reinitLifeView];
 
