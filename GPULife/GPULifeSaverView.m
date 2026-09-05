@@ -25,7 +25,6 @@ static NSString * const kZoomDefaultsName = @"Zoom";
 static NSString * const kInitialFillDefaultsName = @"InitialFill";
 static NSString * const kGenerationDefaultsName = @"GenerationRate";
 static NSString * const kCornerColorsDefaultsName = @"CornerColors";
-static const NSTimeInterval kInitialVisibilityGracePeriod = 2.0;
 
 + (void)initialize
 {
@@ -105,25 +104,10 @@ static const NSTimeInterval kInitialVisibilityGracePeriod = 2.0;
 	if(!window || ![window isVisible] || [self isHiddenOrHasHiddenAncestor])
 		return NO;
 
-	BOOL windowIsUnoccluded = ([window occlusionState] & NSWindowOcclusionStateVisible) != 0;
-	if(windowIsUnoccluded)
-	{
-		hasObservedVisibleWindow = YES;
-		return YES;
-	}
-
-	// Screen saver windows can report themselves occluded until their first frame.
-	return !hasObservedVisibleWindow &&
-		[[NSProcessInfo processInfo] systemUptime] < initialVisibilityDeadline;
-}
-
-- (id)initWithFrame:(NSRect)frame isPreview:(BOOL)isPreview
-{
-    self = [super initWithFrame:frame isPreview:isPreview];
-	if(self)
-		initialVisibilityDeadline = [[NSProcessInfo processInfo] systemUptime] +
-			kInitialVisibilityGracePeriod;
-    return self;
+	// The legacy host can present our surface from another process while its
+	// own window reports itself occluded. Occlusion is not a reliable signal
+	// to stop drawing; use the saver lifecycle and explicit hiding instead.
+	return YES;
 }
 
 - (void)dealloc
@@ -136,10 +120,6 @@ static const NSTimeInterval kInitialVisibilityGracePeriod = 2.0;
 
 - (void)startAnimation
 {
-	hasObservedVisibleWindow = NO;
-	initialVisibilityDeadline = [[NSProcessInfo processInfo] systemUptime] +
-		kInitialVisibilityGracePeriod;
-
 	if(!lifeView && [self shouldRenderLifeView])
 		[self reinitLifeView];
 
@@ -178,7 +158,7 @@ static const NSTimeInterval kInitialVisibilityGracePeriod = 2.0;
 
 - (void)animateOneFrame
 {
-	if(![self shouldRenderLifeView])
+	if(![self isAnimating] || ![self shouldRenderLifeView])
 	{
 		[self releaseLifeView];
 		return;

@@ -14,8 +14,6 @@
 
 @interface GPULifeSaverView : ScreenSaverView {
 	GPULifeView *lifeView;
-	BOOL hasObservedVisibleWindow;
-	NSTimeInterval initialVisibilityDeadline;
 	
 	IBOutlet NSWindow *configureSheet;
 	IBOutlet NSButton *limitFPSCheckbox;

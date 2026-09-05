@@ -59,6 +59,18 @@ file ~/Library/"Screen Savers"/GPULife.saver/Contents/MacOS/GPULife
 The screen saver currently builds as an x86_64 bundle because modern macOS loads
 legacy screen savers through the x86_64 legacy screen saver host.
 
+Run the visibility/lifecycle regression test against the installed bundle:
+
+```sh
+xcrun clang -arch x86_64 -framework Cocoa -framework ScreenSaver \
+  GPULife/tests/PreviewLifecycle.m -o /tmp/gpulife-preview-lifecycle
+/tmp/gpulife-preview-lifecycle "$HOME/Library/Screen Savers/GPULife.saver"
+```
+
+The test replaces the OpenGL child with a frame counter and verifies continued
+rendering after two seconds of reported window occlusion, along with cleanup on
+stop, hiding, and detachment. It exercises both preview and fullscreen modes.
+
 ## Gatekeeper
 
 This project is not notarized for distribution. A local Xcode build should be
