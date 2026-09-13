@@ -233,8 +233,9 @@
 	if(zoom <= 0 || NSWidth(bounds) <= 0.0 || NSHeight(bounds) <= 0.0)
 		return NO;
 
-	int newXSize = MAX(1, (int)(NSWidth(bounds) / zoom));
-	int newYSize = MAX(1, (int)(NSHeight(bounds) / zoom));
+	// Include partially visible cells at the right and top edges.
+	int newXSize = MAX(1, (int)ceil(NSWidth(bounds) / zoom));
+	int newYSize = MAX(1, (int)ceil(NSHeight(bounds) / zoom));
 
 	if(inited && xsize == newXSize && ysize == newYSize)
 		return YES;
@@ -300,23 +301,9 @@
 {
 	[super reshape];
 
-	/* select clearing color 	*/
-	glClearColor (0.0, 0.0, 0.0, 1.0);
-	glClear (GL_COLOR_BUFFER_BIT);
-
-	/* initialize viewing values  */
-	[self setDisplayViewport];
-
-	/*
-	glEnable (GL_BLEND);
-
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnable(GL_TEXTURE_2D);
-	 */
-	//glEnable(GL_TEXTURE_RECTANGLE_EXT);
-
-	[self prepareTextureForCurrentBounds];
+	// Reshape can run during detachment while another view's GL context is
+	// current. drawRect: updates the texture and viewport with our context current.
+	[self setNeedsDisplay:YES];
 }
 
 - (void)timer

@@ -47,6 +47,25 @@ The copied bundle is ad-hoc signed by Xcode for local use.
 If System Settings was already open during the build, quit and reopen it so it
 reloads the installed screen saver bundle.
 
+In Apple's legacy screensaver host, GPULife tracks the ScreenSaverEngine or System
+Settings process presenting each animation. When that process exits, GPULife
+stops its animation timer and releases its renderer, even if the host omits
+`stopAnimation`. A later explicit start can render again. If no presenting
+application can be identified, the usual screensaver lifecycle remains in effect.
+
+On macOS 26 and later, Settings previews also track the preview dialog and its
+parent using WindowServer metadata. Clicking Done releases the renderer without
+requiring System Settings to quit. A twice-per-second visibility check allows
+the same view to resume when Settings reopens the dialog without calling
+`startAnimation`. Hiding Settings also pauses rendering until its windows return.
+If Settings creates a new preview instance, it retires the previous one. This
+does not depend on window titles, screen recording access, or the legacy host's
+unreliable occlusion state. Window metadata is checked at most twice per second
+while a Settings preview is active; fullscreen sessions do not use this check.
+The configuration host announces a new GPULife preview through a notification
+scoped to the Settings process, so a reused renderer can follow a replacement
+dialog window without guessing from unrelated Settings windows.
+
 ## Verify
 
 Check that the installed bundle is present, signed, and built for x86_64:
@@ -70,6 +89,27 @@ xcrun clang -arch x86_64 -framework Cocoa -framework ScreenSaver \
 The test replaces the OpenGL child with a frame counter and verifies continued
 rendering after two seconds of reported window occlusion, along with cleanup on
 stop, hiding, and detachment. It exercises both preview and fullscreen modes.
+It also checks presenting-application exit, a missed exit notification, unrelated
+and stale exit notifications, and restarting with a new presenting application.
+Settings-specific cases cover delayed dialog creation, Done while Settings stays
+open, hide/resume, unavailable window metadata, and replacement of an old preview
+when the dialog's window ID is reused, including reopening without a start callback.
+
+Run the OpenGL rendering regression test:
+
+```sh
+xcrun clang -arch x86_64 -Wno-deprecated-declarations \
+  -framework Cocoa -framework OpenGL \
+  GPULife/tests/Rendering.m -o /tmp/gpulife-rendering
+/tmp/gpulife-rendering "$HOME/Library/Screen Savers/GPULife.saver"
+```
+
+This briefly opens small windows, checks the viewport against the view's backing
+dimensions, and reads pixels at the actual top and right edges. Initial and
+resized frames are checked separately. It also verifies that removing
+a view preserves another view's OpenGL viewport. Simulation stepping is disabled
+to keep the pixels deterministic; this does not reproduce external-display host
+timing issues.
 
 ## Gatekeeper
 

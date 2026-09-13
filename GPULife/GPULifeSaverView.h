@@ -14,6 +14,14 @@
 
 @interface GPULifeSaverView : ScreenSaverView {
 	GPULifeView *lifeView;
+	NSRunningApplication *animationOwner;
+	BOOL tracksSettingsPreview;
+	BOOL settingsPreviewVisible;
+	BOOL previewRebindRequested;
+	CGWindowID previewWindowNumber;
+	CGWindowID previewParentWindowNumber;
+	NSTimeInterval nextPreviewWindowCheck;
+	NSTimeInterval activeAnimationTimeInterval;
 	
 	IBOutlet NSWindow *configureSheet;
 	IBOutlet NSButton *limitFPSCheckbox;
